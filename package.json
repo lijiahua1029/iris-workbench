@@ -1,0 +1,15 @@
+{
+  "name": "iris-workbench",
+  "version": "1.0.0",
+  "description": "Iris 的工作台 - 个人工作台应用",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

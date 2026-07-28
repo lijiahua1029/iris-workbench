@@ -8,9 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Iris的工作台">
 <meta name="theme-color" content="#BBCFC3">
 <title>Iris的工作台</title>
-<!-- 单文件部署：使用内联 favicon -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23BBCFC3'/><rect x='20' y='20' width='28' height='28' rx='6' fill='%23F9CE9C'/><rect x='52' y='20' width='28' height='28' rx='6' fill='%23E18182'/><rect x='20' y='52' width='28' height='28' rx='6' fill='%23C9DDE3'/><rect x='52' y='52' width='28' height='28' rx='6' fill='%238FAE9F'/></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23BBCFC3'/><rect x='20' y='20' width='28' height='28' rx='6' fill='%23F9CE9C'/><rect x='52' y='20' width='28' height='28' rx='6' fill='%23E18182'/><rect x='20' y='52' width='28' height='28' rx='6' fill='%23C9DDE3'/><rect x='52' y='52' width='28' height='28' rx='6' fill='%238FAE9F'/></svg>">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 /* ==================== 全局重置 ==================== */
 * {
@@ -1003,9 +1002,9 @@ input, textarea {
 </div>
 
 <script>
-// ==================== 数据层（本地持久化 + 自动备份） ====================
+// ==================== 数据层（云端同步 + 本地缓存） ====================
 const STORAGE_KEY = 'iris-workbench-data';
-const BACKUP_REMINDER_KEY = 'iris-last-backup-time';
+const API_BASE = window.location.origin;  // 同源部署，API 和前端在同一服务
 let appData = {
   books: [],
   research: [],
@@ -1017,7 +1016,8 @@ let appData = {
 let currentBookType = 'book';
 let pendingImages = { research: [], murmur: [] };
 let editContext = null;
-let changeCount = 0;  // 修改次数计数，用于触发备份提醒
+let syncTimer = null;
+let isSyncing = false;
 
 // 类型配置
 const BOOK_TYPES = {
@@ -1027,34 +1027,75 @@ const BOOK_TYPES = {
   blog:  { icon: '✍️', label: '博客', color: 'var(--c-green-dark)' }
 };
 
-// 加载数据
-function loadData() {
+// 加载数据：优先从云端拉取，失败则用本地缓存
+async function loadData() {
+  // 先加载本地缓存，快速显示
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       appData = Object.assign(appData, parsed);
     }
-  } catch(e) { console.error('加载数据失败', e); }
-}
+  } catch(e) { console.error('加载本地数据失败', e); }
 
-// 保存数据到本地
-function saveData() {
+  // 再从云端拉取最新数据
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-    changeCount++;
-    // 每修改 10 次提醒备份
-    if (changeCount >= 10) {
-      changeCount = 0;
-      setTimeout(() => {
-        if (confirm('💡 你已经添加了不少内容，建议导出备份防止丢失。\n\n现在导出备份吗？')) {
-          exportData();
+    const resp = await fetch(`${API_BASE}/api/data`, { cache: 'no-store' });
+    if (resp.ok) {
+      const cloud = await resp.json();
+      const validKeys = ['books', 'research', 'shopping', 'todo', 'murmur'];
+      let changed = false;
+      validKeys.forEach(k => {
+        if (Array.isArray(cloud[k])) {
+          // 云端有数据就用云端的（以云端为准）
+          if (cloud[k].length > 0 || appData[k].length === 0) {
+            appData[k] = cloud[k];
+            changed = true;
+          }
         }
-      }, 500);
+      });
+      if (changed) {
+        saveLocal();
+        renderAll();
+      }
     }
   } catch(e) {
-    alert('存储空间不足，可能图片太多，请删除一些旧内容或导出备份后清理');
+    console.log('云端同步未就绪，使用本地数据', e);
   }
+}
+
+// 保存到本地
+function saveLocal() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+  } catch(e) {
+    alert('存储空间不足，可能图片太多，请删除一些旧内容');
+  }
+}
+
+// 保存数据：本地立即保存 + 防抖同步到云端
+function saveData() {
+  saveLocal();
+  // 防抖：500ms 内多次修改只同步一次
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncToCloud, 500);
+}
+
+// 同步到云端
+async function syncToCloud() {
+  if (isSyncing) return;
+  isSyncing = true;
+  try {
+    const resp = await fetch(`${API_BASE}/api/data`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(appData)
+    });
+    if (!resp.ok) console.error('云端同步失败', resp.status);
+  } catch(e) {
+    console.error('云端同步出错', e);
+  }
+  isSyncing = false;
 }
 
 // ==================== 导航 ====================
@@ -1654,12 +1695,27 @@ function importData(event) {
   reader.readAsText(file);
 }
 
-// ==================== PWA ====================
-// 单文件部署，不依赖外部 sw.js
+// ==================== PWA Service Worker 注册 ====================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 
 // ==================== 初始化 ====================
-loadData();
+// 先渲染本地缓存（快速显示），再异步从云端拉取最新
 renderAll();
+loadData().then(() => {
+  // 云端数据加载完成后重新渲染
+  renderAll();
+});
+
+// 页面重新可见时自动同步（从后台切回前台）
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    loadData().then(() => renderAll());
+  }
+});
 
 // 点击模态框背景关闭
 document.getElementById('editModal').addEventListener('click', function(e) {
