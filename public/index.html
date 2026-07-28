@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Iris的工作台">
+<meta name="theme-color" content="#BBCFC3">
+<title>Iris的工作台</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+/* ==================== 全局重置 ==================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  --c-green: #BBCFC3;
+  --c-orange: #F9CE9C;
+  --c-red: #E18182;
+  --c-blue: #C9DDE3;
+  --c-green-dark: #8FAE9F;
+  --c-orange-dark: #E0A85F;
+  --c-red-dark: #C55F60;
+  --c-blue-dark: #8FBACE;
+  --c-text: #3A3A3A;
+  --c-text-light: #9A9A9A;
+  --c-bg: #FAFAF7;
+  --c-card: #FFFFFF;
+  --c-border: #ECECE6;
+  --c-shadow: rgba(0,0,0,0.05);
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  color: var(--c-text);
+  background: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+  line-height: 1.6;
+  overscroll-behavior: none;
+}
+
+button {
+  font-family: var(--font);
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+input, textarea {
+  font-family: var(--font);
+  color: var(--c-text);
+}
+
+/* ==================== 布局 ==================== */
+.app {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ==================== 侧边栏 ==================== */
+.sidebar {
+  width: 200px;
+  background: var(--c-green);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0 16px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+  z-index: 100;
+}
+
+.sidebar-header {
+  padding: 0 22px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.35);
+  margin-bottom: 12px;
+}
+
+.sidebar-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.sidebar-subtitle {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  margin-top: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 22px;
+  font-size: 15px;
+  color: rgba(255,255,255,0.82);
+  text-align: left;
+  width: 100%;
+  transition: all 0.2s;
+  position: relative;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.nav-item.active {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+  font-weight: 600;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 22px;
+  background: #fff;
+  border-radius: 0 3px 3px 0;
+}
+
+.nav-item .nav-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.nav-item .nav-num {
+  font-size: 11px;
+  opacity: 0.5;
+  margin-left: auto;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 22px 0;
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+
+.backup-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.backup-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
+}
+
+.backup-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+/* 移动端汉堡按钮 */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 200;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--c-green);
+  color: #fff;
+  font-size: 20px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 99;
+}
+
+.sidebar-overlay.show {
+  display: block;
+}
+
+/* ==================== 主内容区 ==================== */
+.main {
+  flex: 1;
+  padding: 32px 36px 60px;
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.page-count {
+  font-size: 13px;
+  color: var(--c-text-light);
+}
+
+/* ==================== 各模块主题色 ==================== */
+.module-books .page-header { border-color: var(--c-orange); }
+.module-books .page-title { color: var(--c-orange-dark); }
+
+.module-research .page-header { border-color: var(--c-blue); }
+.module-research .page-title { color: var(--c-blue-dark); }
+
+.module-shopping .page-header { border-color: var(--c-red); }
+.module-shopping .page-title { color: var(--c-red-dark); }
+
+.module-todo .page-header { border-color: var(--c-green); }
+.module-todo .page-title { color: var(--c-green-dark); }
+
+.module-murmur .page-header { border-color: var(--c-red); }
+.module-murmur .page-title { color: var(--c-red-dark); }
+
+/* ==================== 添加表单 ==================== */
+.add-form {
+  background: var(--c-card);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 12px var(--c-shadow);
+  border: 1px solid var(--c-border);
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.form-input,
+.form-textarea {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #FBFBF9;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  border-color: var(--c-green-dark);
+}
+
+.form-textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.5;
+}
+
+.form-input-small {
+  max-width: 100px;
+}
+
+.form-label {
+  font-size: 13px;
+  color: var(--c-text-light);
+  font-weight: 500;
+}
+
+/* 类型选择 */
+.type-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.type-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  background: #F4F4F0;
+  color: var(--c-text-light);
+  transition: all 0.2s;
+  border: 1.5px solid transparent;
+  font-weight: 500;
+}
+
+.type-btn .type-icon {
+  font-size: 16px;
+}
+
+.type-btn.selected {
+  background: #fff;
+  color: var(--c-text);
+  border-color: currentColor;
+}
+
+.type-btn[data-type="book"].selected { color: var(--c-orange-dark); background: #FFF6EA; border-color: var(--c-orange); }
+.type-btn[data-type="movie"].selected { color: var(--c-red-dark); background: #FCF0F0; border-color: var(--c-red); }
+.type-btn[data-type="tv"].selected { color: var(--c-blue-dark); background: #EFF7FA; border-color: var(--c-blue); }
+.type-btn[data-type="blog"].selected { color: var(--c-green-dark); background: #EFF5F1; border-color: var(--c-green); }
+
+/* 按钮 */
+.btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--c-green);
+  color: #fff;
+}
+
+.btn-primary:hover { background: var(--c-green-dark); }
+
+.btn-add {
+  background: var(--c-green-dark);
+  color: #fff;
+  padding: 10px 18px;
+}
+
+.btn-add:hover { opacity: 0.9; }
+
+/* 图片上传 */
+.image-upload-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-image {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: #F4F4F0;
+  font-size: 13px;
+  color: var(--c-text-light);
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-image:hover { background: #EAEAE4; }
+
+.image-preview-mini {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* ==================== 列表项 ==================== */
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-card {
+  background: var(--c-card);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 1.5px 8px var(--c-shadow);
+  border: 1px solid var(--c-border);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: all 0.25s;
+  position: relative;
+}
+
+.item-card.done {
+  opacity: 0.5;
+  background: #F6F6F2;
+}
+
+.item-card.done .item-text {
+  text-decoration: line-through;
+  color: var(--c-text-light);
+}
+
+/* 复选框 */
+.checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #D5D5D0;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fff;
+}
+
+.checkbox:hover { border-color: var(--c-green-dark); }
+
+.checkbox.checked {
+  background: var(--c-green-dark);
+  border-color: var(--c-green-dark);
+}
+
+.checkbox.checked::after {
+  content: '✓';
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 不同模块的复选框颜色 */
+.module-shopping .checkbox.checked { background: var(--c-red); border-color: var(--c-red); }
+.module-todo .checkbox.checked { background: var(--c-green-dark); border-color: var(--c-green-dark); }
+.module-books .checkbox.checked { background: var(--c-orange-dark); border-color: var(--c-orange-dark); }
+
+.item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.item-type-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.item-text {
+  font-size: 15px;
+  word-break: break-word;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.item-meta {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--c-text-light);
+  flex-wrap: wrap;
+}
+
+.item-budget {
+  color: var(--c-red-dark);
+  font-weight: 600;
+}
+
+.item-date {
+  color: var(--c-blue-dark);
+}
+
+.item-images {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.item-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.item-image:hover { transform: scale(1.03); }
+
+/* 操作按钮 */
+.item-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--c-text-light);
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: #F0F0EC;
+  color: var(--c-text);
+}
+
+.action-btn.delete:hover {
+  background: #FCF0F0;
+  color: var(--c-red-dark);
+}
+
+/* 采购总额 */
+.shopping-total {
+  margin-top: 20px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #FCF0F0, #FFF6F6);
+  border-radius: 16px;
+  border: 1.5px solid var(--c-red);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shopping-total-label {
+  font-size: 14px;
+  color: var(--c-text);
+  font-weight: 500;
+}
+
+.shopping-total-amount {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--c-red-dark);
+}
+
+.shopping-total-sub {
+  font-size: 12px;
+  color: var(--c-text-light);
+  margin-top: 2px;
+}
+
+/* 碎碎念 - 便签风格 */
+.murmur-card {
+  background: #FFFDF5;
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 1.5px 8px rgba(225,129,130,0.1);
+  border-left: 4px solid var(--c-red);
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.murmur-text {
+  font-size: 15px;
+  line-height: 1.6;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.murmur-images {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.murmur-meta {
+  font-size: 11px;
+  color: var(--c-text-light);
+  margin-top: 8px;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--c-text-light);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.empty-text {
+  font-size: 14px;
+}
+
+/* ==================== 编辑模态框 ==================== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.show {
+  display: flex;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-field label {
+  display: block;
+  font-size: 13px;
+  color: var(--c-text-light);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.modal-field input,
+.modal-field textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #FBFBF9;
+  outline: none;
+}
+
+.modal-field input:focus,
+.modal-field textarea:focus {
+  border-color: var(--c-green-dark);
+}
+
+.modal-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.btn-cancel {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #F0F0EC;
+  color: var(--c-text);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.btn-save {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--c-green-dark);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* 图片查看器 */
+.image-viewer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 400;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.image-viewer.show {
+  display: flex;
+}
+
+.image-viewer img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+}
+
+.image-viewer .close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==================== 页面切换 ==================== */
+.page {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.page.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== 响应式 ==================== */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 20px rgba(0,0,0,0.15);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main {
+    padding: 60px 16px 80px;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .item-card {
+    padding: 12px 14px;
+  }
+
+  .shopping-total-amount {
+    font-size: 22px;
+  }
+}
+
+/* 隐藏文件输入 */
+.file-input {
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<div class="menu-toggle" onclick="toggleSidebar()">☰</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="app">
+  <!-- 侧边栏 -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Iris 的工作台</div>
+      <div class="sidebar-subtitle">My Workspace</div>
+    </div>
+    <button class="nav-item active" data-page="books" onclick="switchPage('books')">
+      <span class="nav-icon">📚</span>
+      <span>待看书籍/影音</span>
+      <span class="nav-num">①</span>
+    </button>
+    <button class="nav-item" data-page="research" onclick="switchPage('research')">
+      <span class="nav-icon">🔬</span>
+      <span>科研随记</span>
+      <span class="nav-num">②</span>
+    </button>
+    <button class="nav-item" data-page="shopping" onclick="switchPage('shopping')">
+      <span class="nav-icon">🛒</span>
+      <span>日常采购</span>
+      <span class="nav-num">③</span>
+    </button>
+    <button class="nav-item" data-page="todo" onclick="switchPage('todo')">
+      <span class="nav-icon">✓</span>
+      <span>日常待办</span>
+      <span class="nav-num">④</span>
+    </button>
+    <button class="nav-item" data-page="murmur" onclick="switchPage('murmur')">
+      <span class="nav-icon">💭</span>
+      <span>碎碎念</span>
+      <span class="nav-num">⑤</span>
+    </button>
+    <div class="sidebar-footer">
+      <div style="margin-bottom:10px;">数据本地存储 · 可离线使用</div>
+      <div class="backup-buttons">
+        <button class="backup-btn" onclick="exportData()">
+          <span>📤</span> 导出备份
+        </button>
+        <button class="backup-btn" onclick="document.getElementById('importFile').click()">
+          <span>📥</span> 导入恢复
+        </button>
+        <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主内容 -->
+  <main class="main">
+
+    <!-- ① 待看书籍/影音 -->
+    <section class="page active module-books" id="page-books">
+      <div class="page-header">
+        <h1 class="page-title">📚 待看书籍/影音</h1>
+        <span class="page-count" id="booksCount"></span>
+      </div>
+      <div class="add-form">
+        <div class="type-selector" id="booksTypeSelector">
+          <button class="type-btn selected" data-type="book" onclick="selectBookType('book')"><span class="type-icon">📖</span>书籍</button>
+          <button class="type-btn" data-type="movie" onclick="selectBookType('movie')"><span class="type-icon">🎬</span>电影</button>
+          <button class="type-btn" data-type="tv" onclick="selectBookType('tv')"><span class="type-icon">📺</span>电视剧</button>
+          <button class="type-btn" data-type="blog" onclick="selectBookType('blog')"><span class="type-icon">✍️</span>博客</button>
+        </div>
+        <div class="form-row">
+          <input type="text" class="form-input" id="booksInput" placeholder="输入标题，如书名、电影名、博客链接..." onkeydown="if(event.key==='Enter')addBook()">
+          <button class="btn btn-add" onclick="addBook()">添加</button>
+        </div>
+      </div>
+      <div class="item-list" id="booksList"></div>
+    </section>
+
+    <!-- ② 科研随记 -->
+    <section class="page module-research" id="page-research">
+      <div class="page-header">
+        <h1 class="page-title">🔬 科研随记</h1>
+        <span class="page-count" id="researchCount"></span>
+      </div>
+      <div class="add-form">
+        <textarea class="form-textarea" id="researchInput" placeholder="记下此刻的灵感、想法、文献笔记..." rows="3"></textarea>
+        <div class="form-row" style="margin-top:10px;">
+          <div class="image-upload-wrap">
+            <label class="btn-image">
+              📷 添加图片
+              <input type="file" class="file-input" accept="image/*" multiple onchange="handleResearchImage(this)">
+            </label>
+            <div id="researchImagePreview"></div>
+          </div>
+          <button class="btn btn-add" onclick="addResearch()" style="margin-left:auto;">添加</button>
+        </div>
+      </div>
+      <div class="item-list" id="researchList"></div>
+    </section>
+
+    <!-- ③ 日常采购 -->
+    <section class="page module-shopping" id="page-shopping">
+      <div class="page-header">
+        <h1 class="page-title">🛒 日常采购</h1>
+        <span class="page-count" id="shoppingCount"></span>
+      </div>
+      <div class="add-form">
+        <div class="form-row">
+          <input type="text" class="form-input" id="shoppingItemInput" placeholder="采购物品" onkeydown="if(event.key==='Enter')addShopping()">
+          <span class="form-label">¥</span>
+          <input type="number" class="form-input form-input-small" id="shoppingBudgetInput" placeholder="预算" min="0" step="0.01">
+          <button class="btn btn-add" onclick="addShopping()">添加</button>
+        </div>
+      </div>
+      <div class="item-list" id="shoppingList"></div>
+      <div class="shopping-total">
+        <div>
+          <div class="shopping-total-label">待采购总额</div>
+          <div class="shopping-total-sub" id="shoppingPurchasedText"></div>
+        </div>
+        <div class="shopping-total-amount" id="shoppingTotal">¥0.00</div>
+      </div>
+    </section>
+
+    <!-- ④ 日常待办 -->
+    <section class="page module-todo" id="page-todo">
+      <div class="page-header">
+        <h1 class="page-title">✓ 日常待办</h1>
+        <span class="page-count" id="todoCount"></span>
+      </div>
+      <div class="add-form">
+        <div class="form-row">
+          <input type="text" class="form-input" id="todoInput" placeholder="待办事项..." onkeydown="if(event.key==='Enter')addTodo()">
+          <input type="date" class="form-input form-input-small" id="todoDateInput" style="max-width:150px;">
+          <button class="btn btn-add" onclick="addTodo()">添加</button>
+        </div>
+      </div>
+      <div class="item-list" id="todoList"></div>
+    </section>
+
+    <!-- ⑤ 碎碎念 -->
+    <section class="page module-murmur" id="page-murmur">
+      <div class="page-header">
+        <h1 class="page-title">💭 碎碎念</h1>
+        <span class="page-count" id="murmurCount"></span>
+      </div>
+      <div class="add-form">
+        <textarea class="form-textarea" id="murmurInput" placeholder="写下此刻的心情..." rows="3"></textarea>
+        <div class="form-row" style="margin-top:10px;">
+          <div class="image-upload-wrap">
+            <label class="btn-image">
+              📷 添加图片
+              <input type="file" class="file-input" accept="image/*" multiple onchange="handleMurmurImage(this)">
+            </label>
+            <div id="murmurImagePreview"></div>
+          </div>
+          <button class="btn btn-add" onclick="addMurmur()" style="margin-left:auto;">添加</button>
+        </div>
+      </div>
+      <div id="murmurList"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- 编辑模态框 -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title" id="editModalTitle">编辑</div>
+    <div class="modal-body" id="editModalBody"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="saveEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 图片查看器 -->
+<div class="image-viewer" id="imageViewer" onclick="closeImageViewer()">
+  <div class="close-btn">✕</div>
+  <img id="viewerImg" src="">
+</div>
+
+<script>
+// ==================== 数据层（云端同步 + 本地缓存） ====================
+const STORAGE_KEY = 'iris-workbench-data';
+const API_BASE = window.location.origin;  // 同源部署，API 和前端在同一服务
+let appData = {
+  books: [],
+  research: [],
+  shopping: [],
+  todo: [],
+  murmur: []
+};
+
+let currentBookType = 'book';
+let pendingImages = { research: [], murmur: [] };
+let editContext = null;
+let syncTimer = null;
+let isSyncing = false;
+
+// 类型配置
+const BOOK_TYPES = {
+  book:  { icon: '📖', label: '书籍', color: 'var(--c-orange-dark)' },
+  movie: { icon: '🎬', label: '电影', color: 'var(--c-red-dark)' },
+  tv:    { icon: '📺', label: '电视剧', color: 'var(--c-blue-dark)' },
+  blog:  { icon: '✍️', label: '博客', color: 'var(--c-green-dark)' }
+};
+
+// 加载数据：优先从云端拉取，失败则用本地缓存
+async function loadData() {
+  // 先加载本地缓存，快速显示
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      appData = Object.assign(appData, parsed);
+    }
+  } catch(e) { console.error('加载本地数据失败', e); }
+
+  // 再从云端拉取最新数据
+  try {
+    const resp = await fetch(`${API_BASE}/api/data`, { cache: 'no-store' });
+    if (resp.ok) {
+      const cloud = await resp.json();
+      const validKeys = ['books', 'research', 'shopping', 'todo', 'murmur'];
+      let changed = false;
+      validKeys.forEach(k => {
+        if (Array.isArray(cloud[k])) {
+          // 云端有数据就用云端的（以云端为准）
+          if (cloud[k].length > 0 || appData[k].length === 0) {
+            appData[k] = cloud[k];
+            changed = true;
+          }
+        }
+      });
+      if (changed) {
+        saveLocal();
+        renderAll();
+      }
+    }
+  } catch(e) {
+    console.log('云端同步未就绪，使用本地数据', e);
+  }
+}
+
+// 保存到本地
+function saveLocal() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+  } catch(e) {
+    alert('存储空间不足，可能图片太多，请删除一些旧内容');
+  }
+}
+
+// 保存数据：本地立即保存 + 防抖同步到云端
+function saveData() {
+  saveLocal();
+  // 防抖：500ms 内多次修改只同步一次
+  if (syncTimer) clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncToCloud, 500);
+}
+
+// 同步到云端
+async function syncToCloud() {
+  if (isSyncing) return;
+  isSyncing = true;
+  try {
+    const resp = await fetch(`${API_BASE}/api/data`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(appData)
+    });
+    if (!resp.ok) console.error('云端同步失败', resp.status);
+  } catch(e) {
+    console.error('云端同步出错', e);
+  }
+  isSyncing = false;
+}
+
+// ==================== 导航 ====================
+function switchPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
+  // 移动端关闭侧栏
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  }
+  window.scrollTo(0, 0);
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebarOverlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+
+// ==================== ① 待看书籍/影音 ====================
+function selectBookType(type) {
+  currentBookType = type;
+  document.querySelectorAll('#booksTypeSelector .type-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.type === type);
+  });
+}
+
+function addBook() {
+  const input = document.getElementById('booksInput');
+  const text = input.value.trim();
+  if (!text) return;
+  appData.books.push({
+    id: Date.now(),
+    type: currentBookType,
+    text: text,
+    done: false
+  });
+  input.value = '';
+  saveData();
+  renderBooks();
+}
+
+function toggleBookDone(id) {
+  const item = appData.books.find(b => b.id === id);
+  if (item) {
+    item.done = !item.done;
+    saveData();
+    renderBooks();
+  }
+}
+
+function deleteBook(id) {
+  if (!confirm('确定删除这一条吗？')) return;
+  appData.books = appData.books.filter(b => b.id !== id);
+  saveData();
+  renderBooks();
+}
+
+function editBook(id) {
+  const item = appData.books.find(b => b.id === id);
+  if (!item) return;
+  editContext = { type: 'book', id };
+  openEditModal('编辑内容', `
+    <div class="modal-field">
+      <label>类型</label>
+      <div class="type-selector" id="editBookType">
+        ${Object.entries(BOOK_TYPES).map(([k,v]) => `
+          <button class="type-btn ${k===item.type?'selected':''}" data-type="${k}" onclick="editContext.bookType='${k}';document.querySelectorAll('#editBookType .type-btn').forEach(b=>b.classList.toggle('selected',b.dataset.type==='${k}'))">
+            <span class="type-icon">${v.icon}</span>${v.label}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>标题</label>
+      <input type="text" id="editBookText" value="${escapeHtml(item.text)}">
+    </div>
+  `);
+  editContext.bookType = item.type;
+}
+
+function renderBooks() {
+  const list = document.getElementById('booksList');
+  const count = document.getElementById('booksCount');
+  if (appData.books.length === 0) {
+    list.innerHTML = emptyState('📖', '还没有添加内容');
+    count.textContent = '';
+    return;
+  }
+  count.textContent = `共 ${appData.books.length} 项`;
+  list.innerHTML = appData.books.map(item => {
+    const t = BOOK_TYPES[item.type] || BOOK_TYPES.book;
+    return `
+      <div class="item-card ${item.done?'done':''}">
+        <div class="checkbox ${item.done?'checked':''}" onclick="toggleBookDone(${item.id})"></div>
+        <div class="item-content">
+          <div class="item-main">
+            <span class="item-type-icon">${t.icon}</span>
+            <span class="item-text">${escapeHtml(item.text)}</span>
+          </div>
+        </div>
+        <div class="item-actions">
+          <button class="action-btn" onclick="editBook(${item.id})" title="编辑">✏️</button>
+          <button class="action-btn delete" onclick="deleteBook(${item.id})" title="删除">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== ② 科研随记 ====================
+function handleResearchImage(input) {
+  handleImageInput(input, 'research');
+}
+
+function addResearch() {
+  const input = document.getElementById('researchInput');
+  const text = input.value.trim();
+  if (!text && pendingImages.research.length === 0) return;
+  appData.research.push({
+    id: Date.now(),
+    text: text,
+    images: [...pendingImages.research]
+  });
+  input.value = '';
+  pendingImages.research = [];
+  document.getElementById('researchImagePreview').innerHTML = '';
+  saveData();
+  renderResearch();
+}
+
+function deleteResearch(id) {
+  if (!confirm('确定删除这条随记吗？')) return;
+  appData.research = appData.research.filter(r => r.id !== id);
+  saveData();
+  renderResearch();
+}
+
+function editResearch(id) {
+  const item = appData.research.find(r => r.id === id);
+  if (!item) return;
+  editContext = { type: 'research', id };
+  openEditModal('编辑随记', `
+    <div class="modal-field">
+      <label>内容</label>
+      <textarea id="editResearchText">${escapeHtml(item.text)}</textarea>
+    </div>
+  `);
+}
+
+function renderResearch() {
+  const list = document.getElementById('researchList');
+  const count = document.getElementById('researchCount');
+  if (appData.research.length === 0) {
+    list.innerHTML = emptyState('🔬', '还没有科研笔记');
+    count.textContent = '';
+    return;
+  }
+  count.textContent = `共 ${appData.research.length} 条`;
+  list.innerHTML = appData.research.map(item => `
+    <div class="item-card">
+      <div class="item-content">
+        <div class="item-text" style="white-space:pre-wrap;">${escapeHtml(item.text) || '<span style="color:#bbb">（无文字）</span>'}</div>
+        ${item.images && item.images.length ? `
+          <div class="item-images">
+            ${item.images.map(img => `<img class="item-image" src="${img}" onclick="viewImage('${img}')">`).join('')}
+          </div>
+        ` : ''}
+      </div>
+      <div class="item-actions">
+        <button class="action-btn" onclick="editResearch(${item.id})">✏️</button>
+        <button class="action-btn delete" onclick="deleteResearch(${item.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== ③ 日常采购 ====================
+function addShopping() {
+  const itemInput = document.getElementById('shoppingItemInput');
+  const budgetInput = document.getElementById('shoppingBudgetInput');
+  const text = itemInput.value.trim();
+  if (!text) return;
+  const budget = parseFloat(budgetInput.value) || 0;
+  appData.shopping.push({
+    id: Date.now(),
+    text: text,
+    budget: budget,
+    done: false
+  });
+  itemInput.value = '';
+  budgetInput.value = '';
+  saveData();
+  renderShopping();
+}
+
+function toggleShoppingDone(id) {
+  const item = appData.shopping.find(s => s.id === id);
+  if (item) {
+    item.done = !item.done;
+    saveData();
+    renderShopping();
+  }
+}
+
+function deleteShopping(id) {
+  if (!confirm('确定删除这一条吗？')) return;
+  appData.shopping = appData.shopping.filter(s => s.id !== id);
+  saveData();
+  renderShopping();
+}
+
+function editShopping(id) {
+  const item = appData.shopping.find(s => s.id === id);
+  if (!item) return;
+  editContext = { type: 'shopping', id };
+  openEditModal('编辑采购项', `
+    <div class="modal-field">
+      <label>采购物品</label>
+      <input type="text" id="editShoppingText" value="${escapeHtml(item.text)}">
+    </div>
+    <div class="modal-field">
+      <label>预算 (¥)</label>
+      <input type="number" id="editShoppingBudget" value="${item.budget}" min="0" step="0.01">
+    </div>
+  `);
+}
+
+function renderShopping() {
+  const list = document.getElementById('shoppingList');
+  const count = document.getElementById('shoppingCount');
+  const totalEl = document.getElementById('shoppingTotal');
+  const purchasedEl = document.getElementById('shoppingPurchasedText');
+
+  if (appData.shopping.length === 0) {
+    list.innerHTML = emptyState('🛒', '还没有采购项');
+    count.textContent = '';
+    totalEl.textContent = '¥0.00';
+    purchasedEl.textContent = '';
+    return;
+  }
+  count.textContent = `共 ${appData.shopping.length} 项`;
+  // 未完成在前，已完成在后
+  const sorted = [...appData.shopping].sort((a,b) => (a.done===b.done?0:a.done?1:-1));
+  list.innerHTML = sorted.map(item => `
+    <div class="item-card ${item.done?'done':''}">
+      <div class="checkbox ${item.done?'checked':''}" onclick="toggleShoppingDone(${item.id})"></div>
+      <div class="item-content">
+        <div class="item-main">
+          <span class="item-text">${escapeHtml(item.text)}</span>
+        </div>
+        ${item.budget > 0 ? `<div class="item-meta"><span class="item-budget">¥${item.budget.toFixed(2)}</span></div>` : ''}
+      </div>
+      <div class="item-actions">
+        <button class="action-btn" onclick="editShopping(${item.id})">✏️</button>
+        <button class="action-btn delete" onclick="deleteShopping(${item.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+
+  // 计算总额：只算未完成的
+  const pending = appData.shopping.filter(s => !s.done);
+  const purchased = appData.shopping.filter(s => s.done);
+  const total = pending.reduce((sum, s) => sum + (s.budget || 0), 0);
+  const purchasedTotal = purchased.reduce((sum, s) => sum + (s.budget || 0), 0);
+  totalEl.textContent = '¥' + total.toFixed(2);
+  purchasedEl.textContent = purchasedTotal > 0 ? `已采购 ¥${purchasedTotal.toFixed(2)}` : '';
+}
+
+// ==================== ④ 日常待办 ====================
+function addTodo() {
+  const input = document.getElementById('todoInput');
+  const dateInput = document.getElementById('todoDateInput');
+  const text = input.value.trim();
+  if (!text) return;
+  appData.todo.push({
+    id: Date.now(),
+    text: text,
+    date: dateInput.value || '',
+    done: false
+  });
+  input.value = '';
+  dateInput.value = '';
+  saveData();
+  renderTodo();
+}
+
+function toggleTodoDone(id) {
+  const item = appData.todo.find(t => t.id === id);
+  if (item) {
+    item.done = !item.done;
+    saveData();
+    renderTodo();
+  }
+}
+
+function deleteTodo(id) {
+  if (!confirm('确定删除这一条吗？')) return;
+  appData.todo = appData.todo.filter(t => t.id !== id);
+  saveData();
+  renderTodo();
+}
+
+function editTodo(id) {
+  const item = appData.todo.find(t => t.id === id);
+  if (!item) return;
+  editContext = { type: 'todo', id };
+  openEditModal('编辑待办', `
+    <div class="modal-field">
+      <label>待办事项</label>
+      <input type="text" id="editTodoText" value="${escapeHtml(item.text)}">
+    </div>
+    <div class="modal-field">
+      <label>待办日期</label>
+      <input type="date" id="editTodoDate" value="${item.date||''}">
+    </div>
+  `);
+}
+
+function renderTodo() {
+  const list = document.getElementById('todoList');
+  const count = document.getElementById('todoCount');
+  if (appData.todo.length === 0) {
+    list.innerHTML = emptyState('✓', '还没有待办事项');
+    count.textContent = '';
+    return;
+  }
+  count.textContent = `共 ${appData.todo.length} 项`;
+  // 未完成在前，已完成移至底部
+  const sorted = [...appData.todo].sort((a,b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    return 0;
+  });
+  list.innerHTML = sorted.map(item => `
+    <div class="item-card ${item.done?'done':''}">
+      <div class="checkbox ${item.done?'checked':''}" onclick="toggleTodoDone(${item.id})"></div>
+      <div class="item-content">
+        <div class="item-main">
+          <span class="item-text">${escapeHtml(item.text)}</span>
+        </div>
+        ${item.date ? `<div class="item-meta"><span class="item-date">📅 ${item.date}</span></div>` : ''}
+      </div>
+      <div class="item-actions">
+        <button class="action-btn" onclick="editTodo(${item.id})">✏️</button>
+        <button class="action-btn delete" onclick="deleteTodo(${item.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== ⑤ 碎碎念 ====================
+function handleMurmurImage(input) {
+  handleImageInput(input, 'murmur');
+}
+
+function addMurmur() {
+  const input = document.getElementById('murmurInput');
+  const text = input.value.trim();
+  if (!text && pendingImages.murmur.length === 0) return;
+  appData.murmur.push({
+    id: Date.now(),
+    text: text,
+    images: [...pendingImages.murmur],
+    time: new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})
+  });
+  input.value = '';
+  pendingImages.murmur = [];
+  document.getElementById('murmurImagePreview').innerHTML = '';
+  saveData();
+  renderMurmur();
+}
+
+function deleteMurmur(id) {
+  if (!confirm('确定删除这条碎碎念吗？')) return;
+  appData.murmur = appData.murmur.filter(m => m.id !== id);
+  saveData();
+  renderMurmur();
+}
+
+function editMurmur(id) {
+  const item = appData.murmur.find(m => m.id === id);
+  if (!item) return;
+  editContext = { type: 'murmur', id };
+  openEditModal('编辑碎碎念', `
+    <div class="modal-field">
+      <label>内容</label>
+      <textarea id="editMurmurText">${escapeHtml(item.text)}</textarea>
+    </div>
+  `);
+}
+
+function renderMurmur() {
+  const list = document.getElementById('murmurList');
+  const count = document.getElementById('murmurCount');
+  if (appData.murmur.length === 0) {
+    list.innerHTML = emptyState('💭', '还没有写下什么...');
+    count.textContent = '';
+    return;
+  }
+  count.textContent = `共 ${appData.murmur.length} 条`;
+  // 倒序显示，最新的在上
+  list.innerHTML = [...appData.murmur].reverse().map(item => `
+    <div class="murmur-card">
+      <div class="murmur-text">${escapeHtml(item.text) || '<span style="color:#bbb">（无文字）</span>'}</div>
+      ${item.images && item.images.length ? `
+        <div class="murmur-images">
+          ${item.images.map(img => `<img class="item-image" src="${img}" onclick="viewImage('${img}')">`).join('')}
+        </div>
+      ` : ''}
+      <div class="murmur-meta">${item.time || ''}</div>
+      <div class="item-actions" style="position:absolute;top:12px;right:12px;">
+        <button class="action-btn" onclick="editMurmur(${item.id})">✏️</button>
+        <button class="action-btn delete" onclick="deleteMurmur(${item.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ==================== 通用：图片处理 ====================
+function handleImageInput(input, category) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    // 压缩图片
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      compressImage(e.target.result, 800, 0.7).then(compressed => {
+        pendingImages[category].push(compressed);
+        renderPendingImages(category);
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function compressImage(dataUrl, maxSize, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = function() {
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = h * maxSize / w; w = maxSize; }
+        else { w = w * maxSize / h; h = maxSize; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
+function renderPendingImages(category) {
+  const el = document.getElementById(category + 'ImagePreview');
+  el.innerHTML = pendingImages[category].map((img, i) => `
+    <div style="position:relative;display:inline-block;">
+      <img src="${img}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;">
+      <button onclick="removePendingImage('${category}',${i})" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--c-red);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;">×</button>
+    </div>
+  `).join('');
+}
+
+function removePendingImage(category, index) {
+  pendingImages[category].splice(index, 1);
+  renderPendingImages(category);
+}
+
+// ==================== 编辑模态框 ====================
+function openEditModal(title, bodyHtml) {
+  document.getElementById('editModalTitle').textContent = title;
+  document.getElementById('editModalBody').innerHTML = bodyHtml;
+  document.getElementById('editModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('show');
+  editContext = null;
+}
+
+function saveEdit() {
+  if (!editContext) return;
+  const { type, id } = editContext;
+  if (type === 'book') {
+    const item = appData.books.find(b => b.id === id);
+    if (item) {
+      item.type = editContext.bookType || item.type;
+      item.text = document.getElementById('editBookText').value.trim() || item.text;
+    }
+  } else if (type === 'research') {
+    const item = appData.research.find(r => r.id === id);
+    if (item) item.text = document.getElementById('editResearchText').value;
+  } else if (type === 'shopping') {
+    const item = appData.shopping.find(s => s.id === id);
+    if (item) {
+      item.text = document.getElementById('editShoppingText').value.trim() || item.text;
+      item.budget = parseFloat(document.getElementById('editShoppingBudget').value) || 0;
+    }
+  } else if (type === 'todo') {
+    const item = appData.todo.find(t => t.id === id);
+    if (item) {
+      item.text = document.getElementById('editTodoText').value.trim() || item.text;
+      item.date = document.getElementById('editTodoDate').value || '';
+    }
+  } else if (type === 'murmur') {
+    const item = appData.murmur.find(m => m.id === id);
+    if (item) item.text = document.getElementById('editMurmurText').value;
+  }
+  saveData();
+  closeModal();
+  renderAll();
+}
+
+// ==================== 图片查看器 ====================
+function viewImage(src) {
+  document.getElementById('viewerImg').src = src;
+  document.getElementById('imageViewer').classList.add('show');
+}
+
+function closeImageViewer() {
+  document.getElementById('imageViewer').classList.remove('show');
+}
+
+// ==================== 工具函数 ====================
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function emptyState(icon, text) {
+  return `<div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-text">${text}</div></div>`;
+}
+
+// ==================== 渲染全部 ====================
+function renderAll() {
+  renderBooks();
+  renderResearch();
+  renderShopping();
+  renderTodo();
+  renderMurmur();
+}
+
+// ==================== 数据备份与恢复 ====================
+function exportData() {
+  const dataStr = JSON.stringify(appData, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const now = new Date();
+  const dateStr = now.getFullYear() + 
+    String(now.getMonth()+1).padStart(2,'0') + 
+    String(now.getDate()).padStart(2,'0');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `iris-workbench-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      // 校验数据结构
+      const validKeys = ['books', 'research', 'shopping', 'todo', 'murmur'];
+      const hasValid = validKeys.some(k => Array.isArray(imported[k]));
+      if (!hasValid) {
+        alert('文件格式不正确，请选择 Iris 工作台的备份文件');
+        return;
+      }
+      if (!confirm('导入将覆盖当前所有数据，确定继续吗？\n\n（建议先导出当前数据作为备份）')) {
+        event.target.value = '';
+        return;
+      }
+      // 合并导入，确保所有 key 存在
+      validKeys.forEach(k => {
+        appData[k] = Array.isArray(imported[k]) ? imported[k] : [];
+      });
+      saveData();
+      renderAll();
+      alert('✅ 数据导入成功！');
+    } catch(err) {
+      alert('导入失败：文件格式错误');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ==================== PWA Service Worker 注册 ====================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
+// ==================== 初始化 ====================
+// 先渲染本地缓存（快速显示），再异步从云端拉取最新
+renderAll();
+loadData().then(() => {
+  // 云端数据加载完成后重新渲染
+  renderAll();
+});
+
+// 页面重新可见时自动同步（从后台切回前台）
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    loadData().then(() => renderAll());
+  }
+});
+
+// 点击模态框背景关闭
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+
+</body>
+</html>
