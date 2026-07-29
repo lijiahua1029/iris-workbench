@@ -588,6 +588,190 @@ input, textarea {
   margin-top: 2px;
 }
 
+/* 搜索栏 */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 22px;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: var(--c-blue-dark);
+}
+
+.btn-search {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--c-blue);
+  color: var(--c-text);
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.btn-search:hover {
+  background: var(--c-blue-dark);
+  color: #fff;
+}
+
+/* 搜索结果弹窗 */
+.search-result-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 350;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.search-result-overlay.show {
+  display: flex;
+}
+
+.search-result-modal {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 75vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.search-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--c-border);
+}
+
+.search-result-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--c-blue-dark);
+}
+
+.search-result-count {
+  font-size: 13px;
+  color: var(--c-text-light);
+}
+
+.search-result-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--c-blue);
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.nav-arrow:hover {
+  background: var(--c-blue-dark);
+}
+
+.nav-arrow:disabled {
+  background: #DDD;
+  cursor: not-allowed;
+}
+
+.nav-indicator {
+  font-size: 13px;
+  color: var(--c-text-light);
+  min-width: 50px;
+  text-align: center;
+}
+
+.search-result-body {
+  background: #F8FBFC;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--c-border);
+}
+
+.search-result-text {
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.search-result-text mark {
+  background: #F9CE9C;
+  color: var(--c-text);
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.search-result-images {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.search-result-time {
+  font-size: 12px;
+  color: var(--c-text-light);
+  margin-top: 10px;
+}
+
+.search-result-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #F0F0EC;
+  color: var(--c-text);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.search-result-close:hover {
+  background: var(--c-red);
+  color: #fff;
+}
+
+.search-result-empty {
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--c-text-light);
+  font-size: 14px;
+}
+
 /* 碎碎念 - 便签风格 */
 .murmur-card {
   background: #FFFDF5;
@@ -915,6 +1099,11 @@ input, textarea {
           <button class="btn btn-add" onclick="addResearch()" style="margin-left:auto;">添加</button>
         </div>
       </div>
+      <!-- 搜索栏 -->
+      <div class="search-bar">
+        <input type="text" class="search-input" id="researchSearchInput" placeholder="输入关键词查找随记..." onkeydown="if(event.key==='Enter')searchResearch()">
+        <button class="btn-search" onclick="searchResearch()">🔍 查找</button>
+      </div>
       <div class="item-list" id="researchList"></div>
     </section>
 
@@ -999,6 +1188,25 @@ input, textarea {
 <div class="image-viewer" id="imageViewer" onclick="closeImageViewer()">
   <div class="close-btn">✕</div>
   <img id="viewerImg" src="">
+</div>
+
+<!-- 科研随记搜索结果弹窗 -->
+<div class="search-result-overlay" id="searchResultOverlay">
+  <div class="search-result-modal">
+    <button class="search-result-close" onclick="closeSearchResult()">✕</button>
+    <div class="search-result-header">
+      <div>
+        <div class="search-result-title">🔍 查找结果</div>
+        <div class="search-result-count" id="searchResultCount"></div>
+      </div>
+      <div class="search-result-nav" id="searchResultNav" style="display:none;">
+        <button class="nav-arrow" id="searchPrev" onclick="navSearchResult(-1)">‹</button>
+        <span class="nav-indicator" id="searchIndicator"></span>
+        <button class="nav-arrow" id="searchNext" onclick="navSearchResult(1)">›</button>
+      </div>
+    </div>
+    <div class="search-result-body" id="searchResultBody"></div>
+  </div>
 </div>
 
 <script>
@@ -1275,6 +1483,86 @@ function renderResearch() {
       </div>
     </div>
   `).join('');
+}
+
+// ==================== ② 科研随记 - 搜索功能 ====================
+let searchResults = [];
+let searchIndex = 0;
+
+function searchResearch() {
+  const keyword = document.getElementById('researchSearchInput').value.trim();
+  if (!keyword) {
+    alert('请输入要查找的关键词');
+    return;
+  }
+
+  // 搜索所有包含关键词的随记
+  searchResults = appData.research.filter(item => {
+    return item.text && item.text.toLowerCase().includes(keyword.toLowerCase());
+  });
+
+  searchIndex = 0;
+
+  if (searchResults.length === 0) {
+    document.getElementById('searchResultCount').textContent = `未找到包含「${keyword}」的随记`;
+    document.getElementById('searchResultNav').style.display = 'none';
+    document.getElementById('searchResultBody').innerHTML = `
+      <div class="search-result-empty">😢 没有找到包含「${escapeHtml(keyword)}」的随记</div>
+    `;
+  } else {
+    showSearchResult(keyword);
+  }
+
+  document.getElementById('searchResultOverlay').classList.add('show');
+}
+
+function showSearchResult(keyword) {
+  const item = searchResults[searchIndex];
+  const total = searchResults.length;
+
+  // 更新计数和导航
+  document.getElementById('searchResultCount').textContent = `找到 ${total} 条包含「${keyword}」的随记`;
+
+  if (total > 1) {
+    document.getElementById('searchResultNav').style.display = 'flex';
+    document.getElementById('searchIndicator').textContent = `${searchIndex + 1} / ${total}`;
+    document.getElementById('searchPrev').disabled = (searchIndex === 0);
+    document.getElementById('searchNext').disabled = (searchIndex === total - 1);
+  } else {
+    document.getElementById('searchResultNav').style.display = 'none';
+  }
+
+  // 高亮关键词
+  const highlightedText = highlightKeyword(item.text || '', keyword);
+
+  document.getElementById('searchResultBody').innerHTML = `
+    <div class="search-result-text">${highlightedText || '<span style="color:#bbb">（无文字）</span>'}</div>
+    ${item.images && item.images.length ? `
+      <div class="search-result-images">
+        ${item.images.map(img => `<img class="item-image" src="${img}" onclick="viewImage('${img}')">`).join('')}
+      </div>
+    ` : ''}
+    <div class="search-result-time">${item.time || ''}</div>
+  `;
+}
+
+function highlightKeyword(text, keyword) {
+  const escaped = escapeHtml(text);
+  const regex = new RegExp(`(${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return escaped.replace(regex, '<mark>$1</mark>');
+}
+
+function navSearchResult(direction) {
+  const newIndex = searchIndex + direction;
+  if (newIndex >= 0 && newIndex < searchResults.length) {
+    searchIndex = newIndex;
+    const keyword = document.getElementById('researchSearchInput').value.trim();
+    showSearchResult(keyword);
+  }
+}
+
+function closeSearchResult() {
+  document.getElementById('searchResultOverlay').classList.remove('show');
 }
 
 // ==================== ③ 日常采购 ====================
@@ -1720,6 +2008,11 @@ document.addEventListener('visibilitychange', () => {
 // 点击模态框背景关闭
 document.getElementById('editModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
+});
+
+// 点击搜索结果背景关闭
+document.getElementById('searchResultOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeSearchResult();
 });
 </script>
 
