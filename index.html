@@ -349,6 +349,7 @@ input, textarea {
 .type-btn[data-type="movie"].selected { color: var(--c-red-dark); background: #FCF0F0; border-color: var(--c-red); }
 .type-btn[data-type="tv"].selected { color: var(--c-blue-dark); background: #EFF7FA; border-color: var(--c-blue); }
 .type-btn[data-type="blog"].selected { color: var(--c-green-dark); background: #EFF5F1; border-color: var(--c-green); }
+.type-btn[data-type="documentary"].selected { color: #B07B45; background: #FBF3E8; border-color: var(--c-orange); }
 
 /* 按钮 */
 .btn {
@@ -586,6 +587,93 @@ input, textarea {
   font-size: 12px;
   color: var(--c-text-light);
   margin-top: 2px;
+}
+
+/* 页头查找按钮 */
+.header-search-btn {
+  margin-left: auto;
+  align-self: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--c-border);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 1px 4px var(--c-shadow);
+  flex-shrink: 0;
+}
+
+.header-search-btn:hover {
+  background: var(--c-orange);
+  border-color: var(--c-orange);
+  transform: scale(1.08);
+}
+
+/* 待看搜索结果列表 */
+.book-search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #FBFBF9;
+  border: 1px solid var(--c-border);
+  margin-top: 8px;
+}
+
+.book-search-result-item.done { opacity: 0.55; }
+.book-search-result-item.done .book-search-result-title { text-decoration: line-through; color: var(--c-text-light); }
+
+.book-search-result-title {
+  flex: 1;
+  font-size: 15px;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.book-search-result-title mark {
+  background: #F9CE9C;
+  color: var(--c-text);
+  padding: 0 2px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.book-search-result-status {
+  font-size: 12px;
+  color: var(--c-text-light);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 可爱空状态弹窗文字 */
+.cute-empty-text {
+  text-align: center;
+  font-size: 16px;
+  padding: 24px 10px 8px;
+  line-height: 2;
+  color: var(--c-text);
+  font-weight: 500;
+}
+
+/* 下拉选择框 */
+.modal-field select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #FBFBF9;
+  outline: none;
+  cursor: pointer;
+}
+
+.modal-field select:focus {
+  border-color: var(--c-orange-dark);
 }
 
 /* 搜索栏 */
@@ -1064,6 +1152,7 @@ input, textarea {
       <div class="page-header">
         <h1 class="page-title">📚 待看书籍/影音</h1>
         <span class="page-count" id="booksCount"></span>
+        <button class="header-search-btn" onclick="openBookSearch()" title="查找">🔍</button>
       </div>
       <div class="add-form">
         <div class="type-selector" id="booksTypeSelector">
@@ -1071,6 +1160,7 @@ input, textarea {
           <button class="type-btn" data-type="movie" onclick="selectBookType('movie')"><span class="type-icon">🎬</span>电影</button>
           <button class="type-btn" data-type="tv" onclick="selectBookType('tv')"><span class="type-icon">📺</span>电视剧</button>
           <button class="type-btn" data-type="blog" onclick="selectBookType('blog')"><span class="type-icon">✍️</span>博客</button>
+          <button class="type-btn" data-type="documentary" onclick="selectBookType('documentary')"><span class="type-icon">🎥</span>纪录片/综艺</button>
         </div>
         <div class="form-row">
           <input type="text" class="form-input" id="booksInput" placeholder="输入标题，如书名、电影名、博客链接..." onkeydown="if(event.key==='Enter')addBook()">
@@ -1209,6 +1299,53 @@ input, textarea {
   </div>
 </div>
 
+<!-- 待看书籍/影音 搜索弹窗 -->
+<div class="modal-overlay" id="bookSearchModal">
+  <div class="modal">
+    <!-- 搜索视图 -->
+    <div id="bookSearchView">
+      <div class="modal-title">🔍 查找待看</div>
+      <div class="form-row" style="margin-bottom:14px;">
+        <input type="text" class="form-input" id="bookSearchInput" placeholder="输入关键词，如：爱人" onkeydown="if(event.key==='Enter')doBookSearch()">
+        <button class="btn btn-add" onclick="doBookSearch()">查找</button>
+      </div>
+      <div id="bookSearchResults"></div>
+    </div>
+    <!-- 无结果视图 -->
+    <div id="bookSearchEmptyView" style="display:none;">
+      <div class="cute-empty-text">还没有待看哦~<br>你要现在添加么~</div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeBookSearch()">否</button>
+        <button class="btn-save" onclick="showAddFromSearch()">是</button>
+      </div>
+    </div>
+    <!-- 添加视图 -->
+    <div id="bookSearchAddView" style="display:none;">
+      <div class="modal-title">➕ 添加待看</div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <label>名称</label>
+          <input type="text" id="bookAddNameInput" placeholder="输入名称，如：再见爱人">
+        </div>
+        <div class="modal-field">
+          <label>类型</label>
+          <select id="bookAddTypeSelect">
+            <option value="book">📖 书籍</option>
+            <option value="movie">🎬 电影</option>
+            <option value="tv">📺 电视剧</option>
+            <option value="blog">✍️ 博客</option>
+            <option value="documentary">🎥 纪录片/综艺</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeBookSearch()">取消</button>
+        <button class="btn-save" onclick="submitAddFromSearch()">添加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ==================== 数据层（云端同步 + 本地缓存） ====================
 const STORAGE_KEY = 'iris-workbench-data';
@@ -1232,7 +1369,8 @@ const BOOK_TYPES = {
   book:  { icon: '📖', label: '书籍', color: 'var(--c-orange-dark)' },
   movie: { icon: '🎬', label: '电影', color: 'var(--c-red-dark)' },
   tv:    { icon: '📺', label: '电视剧', color: 'var(--c-blue-dark)' },
-  blog:  { icon: '✍️', label: '博客', color: 'var(--c-green-dark)' }
+  blog:  { icon: '✍️', label: '博客', color: 'var(--c-green-dark)' },
+  documentary: { icon: '🎥', label: '纪录片/综艺', color: '#B07B45' }
 };
 
 // 加载数据：优先从云端拉取，失败则用本地缓存
@@ -1483,6 +1621,82 @@ function renderResearch() {
       </div>
     </div>
   `).join('');
+}
+
+// ==================== ① 待看书籍/影音 - 搜索功能 ====================
+let lastBookKeyword = '';
+
+function openBookSearch() {
+  // 重置三个视图
+  document.getElementById('bookSearchView').style.display = '';
+  document.getElementById('bookSearchEmptyView').style.display = 'none';
+  document.getElementById('bookSearchAddView').style.display = 'none';
+  document.getElementById('bookSearchResults').innerHTML = '';
+  document.getElementById('bookSearchInput').value = '';
+  document.getElementById('bookSearchModal').classList.add('show');
+  document.getElementById('bookSearchInput').focus();
+}
+
+function closeBookSearch() {
+  document.getElementById('bookSearchModal').classList.remove('show');
+}
+
+function doBookSearch() {
+  const keyword = document.getElementById('bookSearchInput').value.trim();
+  if (!keyword) {
+    alert('请输入要查找的关键词');
+    return;
+  }
+  lastBookKeyword = keyword;
+  // 模糊搜索：不区分大小写的子串匹配（如"爱人"可匹配"再见爱人"）
+  const kw = keyword.toLowerCase();
+  const results = appData.books.filter(b => b.text && b.text.toLowerCase().includes(kw));
+
+  if (results.length === 0) {
+    // 无结果 → 显示可爱询问弹窗
+    document.getElementById('bookSearchView').style.display = 'none';
+    document.getElementById('bookSearchEmptyView').style.display = '';
+  } else {
+    // 有结果 → 渲染结果列表
+    document.getElementById('bookSearchResults').innerHTML =
+      `<div class="search-result-count" style="margin-bottom:4px;">找到 ${results.length} 条结果</div>` +
+      results.map(item => {
+        const t = BOOK_TYPES[item.type] || BOOK_TYPES.book;
+        return `
+          <div class="book-search-result-item ${item.done ? 'done' : ''}">
+            <span class="item-type-icon">${t.icon}</span>
+            <span class="book-search-result-title">${highlightKeyword(item.text, keyword)}</span>
+            <span class="book-search-result-status">${item.done ? '✓ 已看' : '未看'}</span>
+          </div>`;
+      }).join('');
+  }
+}
+
+function showAddFromSearch() {
+  // 切换到添加视图，并预填刚才搜索的关键词
+  document.getElementById('bookSearchEmptyView').style.display = 'none';
+  document.getElementById('bookSearchAddView').style.display = '';
+  document.getElementById('bookAddNameInput').value = lastBookKeyword;
+  document.getElementById('bookAddTypeSelect').value = 'documentary';
+  document.getElementById('bookAddNameInput').focus();
+}
+
+function submitAddFromSearch() {
+  const name = document.getElementById('bookAddNameInput').value.trim();
+  if (!name) {
+    alert('请输入名称');
+    return;
+  }
+  const type = document.getElementById('bookAddTypeSelect').value;
+  appData.books.push({
+    id: Date.now(),
+    type: type,
+    text: name,
+    done: false
+  });
+  saveData();
+  renderBooks();
+  closeBookSearch();
 }
 
 // ==================== ② 科研随记 - 搜索功能 ====================
@@ -2013,6 +2227,11 @@ document.getElementById('editModal').addEventListener('click', function(e) {
 // 点击搜索结果背景关闭
 document.getElementById('searchResultOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeSearchResult();
+});
+
+// 点击待看搜索弹窗背景关闭
+document.getElementById('bookSearchModal').addEventListener('click', function(e) {
+  if (e.target === this) closeBookSearch();
 });
 </script>
 
