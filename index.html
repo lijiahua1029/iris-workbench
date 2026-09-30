@@ -1433,6 +1433,7 @@ let pendingImages = { research: [], murmur: [] };
 let editContext = null;
 let syncTimer = null;
 let isSyncing = false;
+let dataLoaded = false;  // 数据是否已从本地/云端加载完成（防止未加载就写入覆盖）
 
 // 类型配置
 const BOOK_TYPES = {
@@ -1452,6 +1453,7 @@ async function loadData() {
       const parsed = JSON.parse(raw);
       appData = Object.assign(appData, parsed);
     }
+    dataLoaded = true;  // 已读取本地数据，之后才允许任何写入
   } catch(e) { console.error('加载本地数据失败', e); }
 
   // 再从云端拉取最新数据
@@ -2295,6 +2297,7 @@ function getHealthDay(d) {
 
 // 每日凌晨 2 点清除前一天的记录
 function checkAndRotateHealth() {
+  if (!dataLoaded) return;  // 数据未加载前绝不写入，避免覆盖用户数据
   const today = getHealthDay(new Date());
   if (appData.health.date !== today) {
     appData.health.date = today;
@@ -2375,26 +2378,28 @@ if ('serviceWorker' in navigator) {
 }
 
 // ==================== 初始化 ====================
-// 健康记录：确保数据结构存在，并执行每日凌晨 2 点轮换
-if (!appData.health || !Array.isArray(appData.health.records)) {
-  appData.health = { date: '', records: [] };
-}
-checkAndRotateHealth();
-setHealthTimeNow();
-
-// 先渲染本地缓存（快速显示），再异步从云端拉取最新
-renderAll();
-loadData().then(() => {
-  // 云端数据加载完成后重新渲染
+// 关键：必须先「加载已有数据」再「任何写入」，否则会用空默认值覆盖用户数据
+async function init() {
+  // 1. 先读取本地（及云端）已存数据
+  await loadData();
+  // 2. 确保健康记录结构存在（不影响其他模块）
+  if (!appData.health || !Array.isArray(appData.health.records)) {
+    appData.health = { date: '', records: [] };
+  }
+  // 3. 每日凌晨 2 点轮换（此时 appData 已包含真实数据，不会误删其他模块）
   checkAndRotateHealth();
+  setHealthTimeNow();
   renderAll();
-});
+}
+init();
 
 // 页面重新可见时自动同步（从后台切回前台）
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
-    checkAndRotateHealth();
-    loadData().then(() => renderAll());
+    loadData().then(() => {
+      checkAndRotateHealth();
+      renderAll();
+    });
   }
 });
 
