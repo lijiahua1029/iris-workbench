@@ -603,7 +603,7 @@ input, textarea {
 
 /* 采购总额 */
 .shopping-total {
-  margin-top: 20px;
+  margin: 16px 0 22px;
   padding: 18px 20px;
   background: linear-gradient(135deg, #FCF0F0, #FFF6F6);
   border-radius: 16px;
@@ -1250,6 +1250,13 @@ input, textarea {
         <h1 class="page-title">🛒 日常采购</h1>
         <span class="page-count" id="shoppingCount"></span>
       </div>
+      <div class="shopping-total">
+        <div>
+          <div class="shopping-total-label">待采购总额</div>
+          <div class="shopping-total-sub" id="shoppingPurchasedText"></div>
+        </div>
+        <div class="shopping-total-amount" id="shoppingTotal">¥0.00</div>
+      </div>
       <div class="add-form">
         <div class="form-row">
           <input type="text" class="form-input" id="shoppingItemInput" placeholder="采购物品" onkeydown="if(event.key==='Enter')addShopping()">
@@ -1259,13 +1266,6 @@ input, textarea {
         </div>
       </div>
       <div class="item-list" id="shoppingList"></div>
-      <div class="shopping-total">
-        <div>
-          <div class="shopping-total-label">待采购总额</div>
-          <div class="shopping-total-sub" id="shoppingPurchasedText"></div>
-        </div>
-        <div class="shopping-total-amount" id="shoppingTotal">¥0.00</div>
-      </div>
     </section>
 
     <!-- ④ 日常待办 -->
@@ -1915,6 +1915,10 @@ function renderShopping() {
   const totalEl = document.getElementById('shoppingTotal');
   const purchasedEl = document.getElementById('shoppingPurchasedText');
 
+  // 提前计算未采购 / 已采购（供计数与总额共用）
+  const pending = appData.shopping.filter(s => !s.done);
+  const purchased = appData.shopping.filter(s => s.done);
+
   if (appData.shopping.length === 0) {
     list.innerHTML = emptyState('🛒', '还没有采购项');
     count.textContent = '';
@@ -1922,7 +1926,8 @@ function renderShopping() {
     purchasedEl.textContent = '';
     return;
   }
-  count.textContent = `共 ${appData.shopping.length} 项`;
+  // 标题计数只统计「当前未采购」的项目数
+  count.textContent = `共 ${pending.length} 项`;
   // 未完成在前，已完成在后
   const sorted = [...appData.shopping].sort((a,b) => (a.done===b.done?0:a.done?1:-1));
   list.innerHTML = sorted.map(item => `
@@ -1942,8 +1947,6 @@ function renderShopping() {
   `).join('');
 
   // 计算总额：只算未完成的
-  const pending = appData.shopping.filter(s => !s.done);
-  const purchased = appData.shopping.filter(s => s.done);
   const total = pending.reduce((sum, s) => sum + (s.budget || 0), 0);
   const purchasedTotal = purchased.reduce((sum, s) => sum + (s.budget || 0), 0);
   totalEl.textContent = '¥' + total.toFixed(2);
