@@ -1484,6 +1484,13 @@ async function loadData() {
 
 // 保存到本地
 function saveLocal() {
+  // 硬性防护：数据未加载完成前，绝不写入 localStorage，
+  // 防止用空默认值覆盖用户已有数据（其他模块数据永久丢失）。
+  // 这是「其他内容不修改」铁律的技术保障，任何新功能都无法绕过。
+  if (!dataLoaded) {
+    console.warn('[防护] 数据尚未加载，已阻止一次可能覆盖用户数据的写入');
+    return;
+  }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
   } catch(e) {
