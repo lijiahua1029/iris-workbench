@@ -470,6 +470,48 @@ input, textarea {
 .module-todo .checkbox.checked { background: var(--c-green-dark); border-color: var(--c-green-dark); }
 .module-books .checkbox.checked { background: var(--c-orange-dark); border-color: var(--c-orange-dark); }
 
+/* ==================== ⑥ 健康记录 ==================== */
+.health-note {
+  font-size: 12px;
+  color: var(--c-text-light);
+  margin: -10px 4px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-select {
+  flex: 1;
+  min-width: 130px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--c-border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: #FBFBF9;
+  outline: none;
+  color: var(--c-text);
+  transition: border-color 0.2s;
+}
+.form-select:focus { border-color: var(--c-red-dark); }
+
+.form-time {
+  max-width: 130px;
+  min-width: 110px;
+}
+
+.module-health .btn-add { background: var(--c-red); }
+.module-health .btn-add:hover { opacity: 0.9; }
+
+.health-hint {
+  margin-top: 7px;
+  font-size: 12.5px;
+  color: var(--c-text-light);
+  line-height: 1.5;
+  border-left: 3px solid var(--c-orange);
+  padding: 4px 0 4px 10px;
+}
+.health-hint strong { color: var(--c-red-dark); font-weight: 600; }
+
 .item-content {
   flex: 1;
   min-width: 0;
@@ -1130,6 +1172,11 @@ input, textarea {
       <span>碎碎念</span>
       <span class="nav-num">⑤</span>
     </button>
+    <button class="nav-item" data-page="health" onclick="switchPage('health')">
+      <span class="nav-icon">💊</span>
+      <span>健康记录</span>
+      <span class="nav-num">⑥</span>
+    </button>
     <div class="sidebar-footer">
       <div style="margin-bottom:10px;">数据本地存储 · 可离线使用</div>
       <div class="backup-buttons">
@@ -1259,6 +1306,28 @@ input, textarea {
       <div id="murmurList"></div>
     </section>
 
+    <!-- ⑥ 健康记录 -->
+    <section class="page module-health" id="page-health">
+      <div class="page-header">
+        <h1 class="page-title">💊 健康记录</h1>
+        <span class="page-count" id="healthCount"></span>
+      </div>
+      <div class="health-note">⏰ 每日凌晨 2:00 自动清空当日记录</div>
+      <div class="add-form">
+        <div class="form-row">
+          <select class="form-select" id="healthTypeSelect">
+            <option value="铁">💊 铁</option>
+            <option value="钙">🥛 钙</option>
+            <option value="维生素D">☀️ 维生素D</option>
+            <option value="维生素C">🍊 维生素C</option>
+          </select>
+          <input type="time" class="form-input form-time" id="healthTimeInput" step="60">
+          <button class="btn btn-add" onclick="addHealth()">添加</button>
+        </div>
+      </div>
+      <div class="item-list" id="healthList"></div>
+    </section>
+
   </main>
 </div>
 
@@ -1355,7 +1424,8 @@ let appData = {
   research: [],
   shopping: [],
   todo: [],
-  murmur: []
+  murmur: [],
+  health: { date: '', records: [] }
 };
 
 let currentBookType = 'book';
@@ -1389,7 +1459,7 @@ async function loadData() {
     const resp = await fetch(`${API_BASE}/api/data`, { cache: 'no-store' });
     if (resp.ok) {
       const cloud = await resp.json();
-      const validKeys = ['books', 'research', 'shopping', 'todo', 'murmur'];
+      const validKeys = ['books', 'research', 'shopping', 'todo', 'murmur', 'health'];
       let changed = false;
       validKeys.forEach(k => {
         if (Array.isArray(cloud[k])) {
@@ -2137,6 +2207,105 @@ function emptyState(icon, text) {
   return `<div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-text">${text}</div></div>`;
 }
 
+// ==================== ⑥ 健康记录 ====================
+const HEALTH_TYPES = {
+  '铁':     { icon: '💊', hint: (t) => `钙/牛奶 最早 <strong>${addHours(t,3)}</strong> 才能服用` },
+  '钙':     { icon: '🥛', hint: (t) => `铁剂 最早 <strong>${addHours(t,3)}</strong> 才能服用` },
+  '维生素D': { icon: '☀️', hint: () => `随餐（含脂肪）服用吸收更佳，无特殊间隔要求` },
+  '维生素C': { icon: '🍊', hint: () => `可与其他补剂同服，无间隔冲突` }
+};
+
+// 计算 time(HH:MM) 加上 h 小时后的时间，跨日标注（次日）
+function addHours(timeStr, h) {
+  const [hh, mm] = timeStr.split(':').map(Number);
+  let total = hh * 60 + mm + h * 60;
+  const nextDay = total >= 1440;
+  total = ((total % 1440) + 1440) % 1440;
+  const nh = String(Math.floor(total / 60)).padStart(2, '0');
+  const nm = String(total % 60).padStart(2, '0');
+  return `${nh}:${nm}` + (nextDay ? '（次日）' : '');
+}
+
+// 将时间输入框默认设为当前时间
+function setHealthTimeNow() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const el = document.getElementById('healthTimeInput');
+  if (el) el.value = `${hh}:${mm}`;
+}
+
+function addHealth() {
+  const type = document.getElementById('healthTypeSelect').value;
+  const time = document.getElementById('healthTimeInput').value;
+  if (!time) { alert('请选择服用时间'); return; }
+  appData.health.records.push({ id: Date.now(), type, time });
+  saveData();
+  renderHealth();
+  setHealthTimeNow();  // 重置为当前时间，方便连续添加
+}
+
+function deleteHealth(id) {
+  if (!confirm('确定删除这一条吗？')) return;
+  appData.health.records = appData.health.records.filter(r => r.id !== id);
+  saveData();
+  renderHealth();
+}
+
+function renderHealth() {
+  const list = document.getElementById('healthList');
+  const count = document.getElementById('healthCount');
+  const records = appData.health.records;
+  if (records.length === 0) {
+    list.innerHTML = emptyState('💊', '今天还没记录哦');
+    count.textContent = '';
+    return;
+  }
+  count.textContent = `今日 ${records.length} 条`;
+  // 按服用时间先后排序
+  const sorted = [...records].sort((a, b) => a.time.localeCompare(b.time));
+  list.innerHTML = sorted.map(item => {
+    const t = HEALTH_TYPES[item.type] || HEALTH_TYPES['铁'];
+    return `
+      <div class="item-card">
+        <div class="item-content">
+          <div class="item-main">
+            <span class="item-type-icon">${t.icon}</span>
+            <span class="item-text"><strong>${escapeHtml(item.type)}</strong> · ${item.time}</span>
+          </div>
+          <div class="health-hint">下一次服用补剂的最佳时间：${t.hint(item.time)}</div>
+        </div>
+        <div class="item-actions">
+          <button class="action-btn delete" onclick="deleteHealth(${item.id})" title="删除">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 获取"健康日"：凌晨 2 点之前属于前一天
+function getHealthDay(d) {
+  const x = new Date(d);
+  if (x.getHours() < 2) x.setDate(x.getDate() - 1);
+  const y = x.getFullYear();
+  const m = String(x.getMonth() + 1).padStart(2, '0');
+  const day = String(x.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+// 每日凌晨 2 点清除前一天的记录
+function checkAndRotateHealth() {
+  const today = getHealthDay(new Date());
+  if (appData.health.date !== today) {
+    appData.health.date = today;
+    appData.health.records = [];
+    saveData();
+    if (document.getElementById('page-health').classList.contains('active')) {
+      renderHealth();
+    }
+  }
+}
+
 // ==================== 渲染全部 ====================
 function renderAll() {
   renderBooks();
@@ -2144,6 +2313,7 @@ function renderAll() {
   renderShopping();
   renderTodo();
   renderMurmur();
+  renderHealth();
 }
 
 // ==================== 数据备份与恢复 ====================
@@ -2172,7 +2342,7 @@ function importData(event) {
     try {
       const imported = JSON.parse(e.target.result);
       // 校验数据结构
-      const validKeys = ['books', 'research', 'shopping', 'todo', 'murmur'];
+      const validKeys = ['books', 'research', 'shopping', 'todo', 'murmur', 'health'];
       const hasValid = validKeys.some(k => Array.isArray(imported[k]));
       if (!hasValid) {
         alert('文件格式不正确，请选择 Iris 工作台的备份文件');
@@ -2205,19 +2375,31 @@ if ('serviceWorker' in navigator) {
 }
 
 // ==================== 初始化 ====================
+// 健康记录：确保数据结构存在，并执行每日凌晨 2 点轮换
+if (!appData.health || !Array.isArray(appData.health.records)) {
+  appData.health = { date: '', records: [] };
+}
+checkAndRotateHealth();
+setHealthTimeNow();
+
 // 先渲染本地缓存（快速显示），再异步从云端拉取最新
 renderAll();
 loadData().then(() => {
   // 云端数据加载完成后重新渲染
+  checkAndRotateHealth();
   renderAll();
 });
 
 // 页面重新可见时自动同步（从后台切回前台）
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
+    checkAndRotateHealth();
     loadData().then(() => renderAll());
   }
 });
+
+// 每分钟检测一次，跨过凌晨 2 点时自动清空当日记录
+setInterval(checkAndRotateHealth, 60 * 1000);
 
 // 点击模态框背景关闭
 document.getElementById('editModal').addEventListener('click', function(e) {
