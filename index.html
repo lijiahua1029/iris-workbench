@@ -1133,6 +1133,112 @@ input, textarea {
 .file-input {
   display: none;
 }
+
+/* ==================== 首页（高性价比人生指南） ==================== */
+.module-home .page-header { border-color: var(--c-green); display: none; }
+.home-hero { text-align: center; padding: 14px 0 4px; }
+.home-hero-title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--c-green-dark);
+}
+.home-hero-sub { font-size: 13px; color: var(--c-text-light); margin-top: 8px; letter-spacing: 1px; }
+.home-guide-label {
+  display: inline-block;
+  margin: 30px 0 12px;
+  font-size: 13px;
+  color: #fff;
+  background: var(--c-green);
+  padding: 5px 16px;
+  border-radius: 20px;
+  letter-spacing: 2px;
+}
+.home-guide {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px 22px;
+  box-shadow: 0 4px 18px var(--c-shadow);
+  border: 1px solid var(--c-border);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-align: left;
+}
+.home-guide:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(0,0,0,0.08); }
+.guide-quote { font-size: 16.5px; line-height: 1.85; color: var(--c-text); white-space: pre-wrap; word-break: break-word; }
+.guide-meta {
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: var(--c-text-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.guide-go { color: var(--c-green-dark); font-weight: 600; white-space: nowrap; }
+.guide-refresh { color: var(--c-text-light); cursor: pointer; white-space: nowrap; }
+.guide-refresh:hover { color: var(--c-green-dark); }
+.home-tip { text-align: center; font-size: 12px; color: var(--c-text-light); margin-top: 28px; line-height: 1.8; }
+.home-jump {
+  display: flex; gap: 12px; justify-content: center; margin-top: 20px; flex-wrap: wrap;
+}
+.home-jump-btn {
+  padding: 10px 20px; border-radius: 22px; font-size: 14px; font-weight: 600;
+  background: #fff; border: 1.5px solid var(--c-green); color: var(--c-green-dark);
+  cursor: pointer; transition: all 0.2s;
+}
+.home-jump-btn:hover { background: var(--c-green); color: #fff; }
+
+/* ==================== Mylife 模块 ==================== */
+.module-mylife .page-header { border-color: var(--c-blue); }
+.module-mylife .page-title { color: var(--c-blue-dark); }
+.mylife-search { margin-bottom: 16px; }
+.mylife-list { display: flex; flex-direction: column; gap: 10px; }
+.mylife-sec-row {
+  display: flex; align-items: center; gap: 12px;
+  background: #fff; border: 1px solid var(--c-border); border-radius: 14px;
+  padding: 15px 16px; cursor: pointer; transition: all 0.2s;
+}
+.mylife-sec-row:hover { border-color: var(--c-blue); background: #F4FAFC; }
+.mylife-sec-num {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--c-blue); color: #fff;
+  font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.mylife-sec-title { flex: 1; font-size: 15px; font-weight: 500; line-height: 1.4; }
+.mylife-sec-count { font-size: 12px; color: var(--c-text-light); flex-shrink: 0; }
+.mylife-sec-arrow { color: var(--c-blue-dark); font-size: 20px; flex-shrink: 0; }
+.mylife-back {
+  color: var(--c-blue-dark); font-size: 14px; font-weight: 600; cursor: pointer;
+  margin-bottom: 16px; display: inline-block;
+}
+.mylife-back:hover { text-decoration: underline; }
+.mylife-detail-title { font-size: 22px; font-weight: 700; color: var(--c-blue-dark); margin-bottom: 6px; line-height: 1.4; }
+.mylife-intro {
+  font-size: 13.5px; color: var(--c-text-light); line-height: 1.75;
+  background: #F4FAFC; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;
+  white-space: pre-wrap; word-break: break-word;
+}
+.mylife-entry {
+  background: #fff; border: 1px solid var(--c-border); border-radius: 14px;
+  padding: 15px 17px; margin-bottom: 12px; box-shadow: 0 1px 6px var(--c-shadow);
+  scroll-margin-top: 20px;
+}
+.mylife-entry-title { font-size: 16px; font-weight: 700; color: var(--c-text); margin-bottom: 9px; line-height: 1.5; }
+.mylife-bullet { font-size: 14.5px; line-height: 1.75; margin-bottom: 7px; white-space: pre-wrap; word-break: break-word; }
+.mylife-bullet:last-child { margin-bottom: 0; }
+.mylife-bullet-label { color: var(--c-blue-dark); font-weight: 600; margin-right: 2px; }
+.entry-flash { animation: flashHi 1.8s ease; }
+@keyframes flashHi { 0% { background: #FFF6D6; } 100% { background: #fff; } }
+
+/* ==================== 专业术语 虚线 + 对话框 ==================== */
+.term {
+  border-bottom: 1px dashed var(--c-blue-dark);
+  color: var(--c-blue-dark);
+  cursor: help;
+}
+.term:hover { background: rgba(143,186,206,0.18); }
+.term-dialog-body { font-size: 14.5px; line-height: 1.85; color: var(--c-text); white-space: pre-wrap; word-break: break-word; }
+.term-dialog-title { color: var(--c-blue-dark); }
 </style>
 </head>
 <body>
@@ -1147,7 +1253,11 @@ input, textarea {
       <div class="sidebar-title">Iris 的工作台</div>
       <div class="sidebar-subtitle">My Workspace</div>
     </div>
-    <button class="nav-item active" data-page="books" onclick="switchPage('books')">
+    <button class="nav-item active" data-page="home" onclick="switchPage('home')">
+      <span class="nav-icon">🏠</span>
+      <span>首页</span>
+    </button>
+    <button class="nav-item" data-page="books" onclick="switchPage('books')">
       <span class="nav-icon">📚</span>
       <span>待看书籍/影音</span>
       <span class="nav-num">①</span>
@@ -1177,6 +1287,11 @@ input, textarea {
       <span>健康记录</span>
       <span class="nav-num">⑥</span>
     </button>
+    <button class="nav-item" data-page="mylife" onclick="switchPage('mylife')">
+      <span class="nav-icon">📖</span>
+      <span>Mylife</span>
+      <span class="nav-num">⑦</span>
+    </button>
     <div class="sidebar-footer">
       <div style="margin-bottom:10px;">数据本地存储 · 可离线使用</div>
       <div class="backup-buttons">
@@ -1195,7 +1310,7 @@ input, textarea {
   <main class="main">
 
     <!-- ① 待看书籍/影音 -->
-    <section class="page active module-books" id="page-books">
+    <section class="page module-books" id="page-books">
       <div class="page-header">
         <h1 class="page-title">📚 待看书籍/影音</h1>
         <span class="page-count" id="booksCount"></span>
@@ -1328,6 +1443,34 @@ input, textarea {
       <div class="item-list" id="healthList"></div>
     </section>
 
+    <!-- 首页：高性价比人生指南 -->
+    <section class="page active module-home" id="page-home">
+      <div class="home-hero">
+        <div class="home-hero-title">高性价比人生指南</div>
+        <div class="home-hero-sub">挑走一两条就算数 · 按性价比排好的备选单</div>
+      </div>
+      <div style="text-align:center;">
+        <span class="home-guide-label">人 生 指 南</span>
+      </div>
+      <div class="home-guide" id="homeGuide"></div>
+      <div class="home-jump">
+        <button class="home-jump-btn" onclick="switchPage('mylife')">📖 进入 Mylife 全书</button>
+      </div>
+      <div class="home-tip">点击上方「人生指南」卡片，可跳转查看该建议的完整详情</div>
+    </section>
+
+    <!-- Mylife -->
+    <section class="page module-mylife" id="page-mylife">
+      <div class="page-header">
+        <h1 class="page-title">📖 Mylife</h1>
+        <span class="page-count" id="mylifeCount"></span>
+      </div>
+      <div class="mylife-search">
+        <input type="text" class="search-input" id="mylifeSearch" placeholder="搜索章节标题，如：结婚、买房、夜班…" oninput="renderMylife()">
+      </div>
+      <div id="mylifeBody" class="mylife-list"></div>
+    </section>
+
   </main>
 </div>
 
@@ -1415,6 +1558,18 @@ input, textarea {
   </div>
 </div>
 
+<!-- 专业术语解释对话框 -->
+<div class="modal-overlay" id="termDialog" onclick="if(event.target===this)closeTerm()">
+  <div class="modal">
+    <div class="modal-title term-dialog-title" id="termDialogTitle">术语</div>
+    <div class="term-dialog-body" id="termDialogBody"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeTerm()">知道了</button>
+    </div>
+  </div>
+</div>
+
+<script src="book-data.js"></script>
 <script>
 // ==================== 数据层（云端同步 + 本地缓存） ====================
 const STORAGE_KEY = 'iris-workbench-data';
@@ -1535,6 +1690,9 @@ function switchPage(page) {
     document.getElementById('sidebarOverlay').classList.remove('show');
   }
   window.scrollTo(0, 0);
+  // 进入首页 / Mylife 时刷新对应内容
+  if (page === 'home') renderHome();
+  if (page === 'mylife') renderMylife();
 }
 
 function toggleSidebar() {
@@ -2380,6 +2538,186 @@ function importData(event) {
   reader.readAsText(file);
 }
 
+// ==================== 高性价比人生指南 / Mylife ====================
+// 构建扁平索引（供首页随机「人生指南」使用）
+const BOOK_FLAT = [];
+if (typeof BOOK_DATA !== 'undefined') {
+  BOOK_DATA.sections.forEach(function(sec) {
+    sec.entries.forEach(function(en) {
+      BOOK_FLAT.push({ secId: sec.id, secTitle: sec.title, entry: en });
+    });
+  });
+}
+
+// 专业术语表（带虚线，点击弹出解释）
+const GLOSSARY = {
+  "HR": "HR（Hazard Ratio，风险比）：随访研究中，干预组与对照组发生某事件（如死亡）的瞬时风险之比。HR<1 表示干预组风险更低、更慢。",
+  "风险比": "风险比（Hazard Ratio，HR）：随访研究中两组发生某事件的风险之比，见 HR。",
+  "RR": "RR（Relative Risk，相对风险）：暴露组事件发生率与对照组之比。RR<1 表示暴露使该事件风险降低。",
+  "相对风险": "相对风险（Relative Risk，RR）：暴露组与对照组的事件发生率之比，见 RR。",
+  "OR": "OR（Odds Ratio，比值比）：病例组与对照组暴露优势之比，常用于病例对照研究。OR<1 代表关联为负（保护效应）。",
+  "比值比": "比值比（Odds Ratio，OR）：见 OR。",
+  "CI": "CI（Confidence Interval，可信/置信区间）：估计值的可信范围，如「95% CI 0.77–0.83」。区间不跨 1（对 HR/RR/OR）通常意味着差异有统计学意义。",
+  "95% CI": "95% CI（95% 可信区间）：有 95% 的把握真实值落在该区间内。区间越窄越精确；对 HR/RR/OR，区间不跨 1 一般表示差异显著。",
+  "可信区间": "可信区间（Confidence Interval，CI）：估计值的可信范围，见 CI。",
+  "置信区间": "置信区间（Confidence Interval，CI）：估计值的可信范围，见 CI。",
+  "可信范围": "可信范围（即置信/可信区间，CI）：估计值的可信范围，见 CI。",
+  "随机分组": "随机分组（RCT 的核心）：用随机方法把参与者分到干预组与对照组，使两组除干预外尽量可比，结论更可信。",
+  "随机对照试验": "RCT（Randomized Controlled Trial，随机对照试验）：最高质量的干预性研究之一，参与者被随机分到干预组和对照组。",
+  "RCT": "RCT（Randomized Controlled Trial，随机对照试验）：见「随机对照试验」。",
+  "队列研究": "队列研究（Cohort Study）：追踪一群人一段时间，看暴露因素与结局的关系，属于观察性研究。",
+  "系统综述": "系统综述（Systematic Review）：用系统、透明的方法汇总同一科学问题的多项研究。",
+  "meta分析": "Meta 分析（荟萃分析）：把多个同类研究的结果合并统计，得到更稳定的效应估计。",
+  "荟萃分析": "荟萃分析（Meta 分析）：把多个同类研究的结果合并统计，得到更稳定的效应估计。",
+  "证据等级": "证据等级：本书对每条建议证据强度的评级（A 最强，依次递减）。A 多来自随机对照试验或高质量官方统计；B/C 较弱或存在争议。",
+  "病死率": "病死率（Case Fatality Rate）：患某病人群中死亡的比例，如「病死率 0.6%」即每 1000 名患者约 6 人死亡。",
+  "死亡率": "死亡率（Mortality Rate）：某段时间内总人口中死亡人数所占比例，反映人群层面的死亡水平。",
+  "体重指数": "体重指数（BMI = 体重 kg ÷ 身高 m²）：一般 ≥24 为超重、≥28 为肥胖（中国标准）；本书以 ≥25 为超重。",
+  "BMI": "BMI（Body Mass Index，体重指数）：BMI = 体重(kg) ÷ 身高(m)²，见「体重指数」。",
+  "DOI": "DOI（数字对象唯一标识符）：论文的固定网络身份证，形如 https://doi.org/xxx，可据此查到原始文献。",
+  "安慰剂": "安慰剂（Placebo）：外观与真药相同但无有效成分的对照物，用于排除心理作用对疗效的干扰。",
+  "盲法": "盲法（Blinding）：参与者或研究者不知道谁用了真干预，避免主观偏差；双盲最严格。",
+  "异质性": "异质性（Heterogeneity）：合并多项研究时，各研究结果之间的差异；差异过大时合并结论需谨慎。"
+};
+
+// 按长度降序，保证较长术语优先匹配
+const TERM_KEYS = Object.keys(GLOSSARY).sort(function(a, b) { return b.length - a.length; });
+
+// 在（已转义的）文本中为专业术语包裹虚线 span；手动扫描，避免回溯/重复匹配
+function renderWithTerms(text) {
+  if (!text) return '';
+  var out = '';
+  var i = 0, n = text.length;
+  function isLetter(ch) { return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'); }
+  while (i < n) {
+    var matched = null;
+    for (var ki = 0; ki < TERM_KEYS.length; ki++) {
+      var k = TERM_KEYS[ki];
+      if (text.substr(i, k.length) === k) {
+        if (/^[A-Z]{2,}$/.test(k)) {
+          var before = i > 0 ? text[i - 1] : '';
+          var after = (i + k.length < n) ? text[i + k.length] : '';
+          if (isLetter(before) || isLetter(after)) continue; // 不是独立缩写，跳过
+        }
+        matched = k; break;
+      }
+    }
+    if (matched) {
+      var mk = matched.replace(/'/g, "\\'");
+      out += '<span class="term" onclick="event.stopPropagation();showTerm(\'' + mk + '\')">' + matched + '</span>';
+      i += matched.length;
+    } else {
+      out += text[i];
+      i++;
+    }
+  }
+  return out;
+}
+
+function showTerm(key) {
+  var def = GLOSSARY[key];
+  if (!def) return;
+  document.getElementById('termDialogTitle').textContent = key;
+  document.getElementById('termDialogBody').textContent = def;
+  document.getElementById('termDialog').classList.add('show');
+}
+
+function closeTerm() {
+  document.getElementById('termDialog').classList.remove('show');
+}
+
+// 首页：随机一条「人生指南」（优先取「说人话」一句）
+function pickDailyGuide() {
+  var item = BOOK_FLAT[Math.floor(Math.random() * BOOK_FLAT.length)];
+  var text = '';
+  var sh = item.entry.bullets.find(function(b) { return b.label === '说人话'; });
+  if (sh) text = sh.text;
+  else {
+    var c = item.entry.bullets.find(function(b) { return b.label === '成本'; });
+    if (c) text = c.text;
+    else if (item.entry.bullets[0]) text = item.entry.bullets[0].text;
+    else text = item.entry.title;
+  }
+  return { item: item, text: text };
+}
+
+function renderHome() {
+  if (typeof BOOK_FLAT === 'undefined' || BOOK_FLAT.length === 0) return;
+  var g = pickDailyGuide();
+  var card = document.getElementById('homeGuide');
+  card.innerHTML =
+    '<div class="guide-quote">' + renderWithTerms(escapeHtml(g.text)) + '</div>' +
+    '<div class="guide-meta">' +
+      '<span>—— 来自《' + escapeHtml(g.item.secTitle) + '》· ' + escapeHtml(g.item.entry.title) + '</span>' +
+      '<span class="guide-go">查看详情 ›</span>' +
+    '</div>';
+  card.onclick = function() { openEntry(g.item.secId, g.item.entry.id); };
+}
+
+// Mylife：章节列表
+function renderMylife() {
+  var searchEl = document.getElementById('mylifeSearch');
+  var kw = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  var wrap = document.getElementById('mylifeBody');
+  var secs = BOOK_DATA.sections.filter(function(s) {
+    if (!kw) return true;
+    return s.title.toLowerCase().indexOf(kw) >= 0;
+  });
+  document.getElementById('mylifeCount').textContent = '共 ' + BOOK_DATA.sections.length + ' 章';
+  if (secs.length === 0) {
+    wrap.className = 'mylife-list';
+    wrap.innerHTML = emptyState('📖', '没有匹配的章节');
+    return;
+  }
+  wrap.className = 'mylife-list';
+  wrap.innerHTML = secs.map(function(s) {
+    var idx = BOOK_DATA.sections.indexOf(s) + 1;
+    return '<div class="mylife-sec-row" onclick="openSection(\'' + s.id + '\')">' +
+      '<span class="mylife-sec-num">' + idx + '</span>' +
+      '<span class="mylife-sec-title">' + escapeHtml(s.title) + '</span>' +
+      '<span class="mylife-sec-count">' + s.entries.length + ' 条</span>' +
+      '<span class="mylife-sec-arrow">›</span>' +
+    '</div>';
+  }).join('');
+}
+
+// Mylife：章节详情（只显示内容，无「来源」）
+function openSection(secId) {
+  var sec = BOOK_DATA.sections.find(function(s) { return s.id === secId; });
+  if (!sec) return;
+  var wrap = document.getElementById('mylifeBody');
+  wrap.className = 'mylife-detail';
+  var html = '<div class="mylife-back" onclick="renderMylife()">‹ 返回全部章节</div>' +
+    '<div class="mylife-detail-title">' + escapeHtml(sec.title) + '</div>';
+  if (sec.intro) {
+    html += '<div class="mylife-intro">' + renderWithTerms(escapeHtml(sec.intro)) + '</div>';
+  }
+  html += sec.entries.map(function(e) {
+    var bullets = e.bullets.map(function(b) {
+      var lab = b.label ? escapeHtml(b.label) + '：' : '';
+      return '<div class="mylife-bullet"><span class="mylife-bullet-label">' + lab +
+        '</span><span class="mylife-bullet-text">' + renderWithTerms(escapeHtml(b.text)) + '</span></div>';
+    }).join('');
+    return '<div class="mylife-entry" id="entry-' + e.id + '">' +
+      '<div class="mylife-entry-title">' + escapeHtml(e.title) + '</div>' + bullets + '</div>';
+  }).join('');
+  wrap.innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+// 从首页「人生指南」跳转：进入 Mylife 并定位到具体条目
+function openEntry(secId, entryId) {
+  switchPage('mylife');
+  openSection(secId);
+  setTimeout(function() {
+    var el = document.getElementById('entry-' + entryId);
+    if (el) {
+      el.classList.add('entry-flash');
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 60);
+}
+
 // ==================== PWA Service Worker 注册 ====================
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -2400,6 +2738,7 @@ async function init() {
   checkAndRotateHealth();
   setHealthTimeNow();
   renderAll();
+  renderHome();  // 首页随机「人生指南」（书籍内容为只读常量，不触碰 appData / 存储层）
 }
 init();
 
